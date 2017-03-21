@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>KD - Pank Api Test</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-material.css">
+    <link rel="stylesheet" type="text/css" href="css/ripple.css">
+    <link rel="stylesheet" type="text/css" href="css/custom.css">
+  </head>
+  <body>
+  	<div ng-app="PankApi">
+      <div ng-controller="MainController as MC">
+        <div class="jumbotron">
+          <div class="container">
+            <div class="button-container">
+              <button ng-class="{'btn-success': sortOption.name == 'ibu'}" class="btn btn-raised button-sort" ng-click="orderBy('ibu')">sort by ibu
+                <div class="sort-active">
+                  <span ng-show="sortOption.name == 'ibu' && sortOption.reverse == false">ordine crescente</span>
+                  <span ng-show="sortOption.name == 'ibu' && sortOption.reverse == true">ordine descrente</span>
+                </div>
+              </button>
+              <button ng-class="{'btn-success': sortOption.name == 'abv'}" class="btn btn-raised button-sort" ng-click="orderBy('abv')">sort by abv
+                <div class="sort-active">
+                  <span ng-show="sortOption.name == 'abv' && sortOption.reverse == false">ordine crescente</span>
+                  <span ng-show="sortOption.name == 'abv' && sortOption.reverse == true">ordine descrente</span>
+                </div>
+              </button>
+            </div>
+            <div class="col-sm-12">
+              <h1 class="main-title">Punk-Api Test</h1>
+            </div>
+            <div class="loading" ng-show="!beerList.length">
+              <span>Caricamento...</span>
+            </div>
+            <div ng-if="beer.ibu >= 0 && beer.ibu <= 100 && beer.abv >= 2 && beer.abv <= 12"
+                ng-repeat="beer in beerList | orderBy:sortOption.name:sortOption.reverse">
+              <beer data="beer" ></beer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  	<!-- <script type="text/javascript" src="main.controller.js"></script> -->
+    <script type="text/javascript">
+      var beerComponent = {
+        template: `
+        <div class="col-sm-3 col-xs12 col-lg-3" class="">
+          <div class="beer-box col-sm-12">
+            <div class="panel panel-default">
+              <div class="beer-name">
+                  {{$ctrl.data.name}}
+                </div>
+              <div class="panel-body">
+                <div class="beer-image col-sm-12">
+                  <img class="img-responsive" src="{{$ctrl.data.image_url}}">
+                </div>
+              </div>
+              <div class="beer-info panel-footer col-sm-12">
+                <div class="col-sm-12">
+                   <div class="row">
+                    ABV: {{$ctrl.data.abv}}
+                   </div>
+                </div>
+                <div class="col-sm-12">
+                   <div class="row">
+                    IBU: {{$ctrl.data.ibu}}
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`,
+        bindings: {
+          data: '='
+        }
+      };
+      angular.module('PankApi', [])
+        .controller('MainController',
+          function($scope, $http) {
+            $scope.mainController = {
+              abv: '', // Alchool By Volume
+              ibu: '', // International Bitterness Units
+              currentPage: 1
+            }
+            $scope.beerList = []
+            $http
+              .get('https://api.punkapi.com/v2/beers')
+              .then( function(response){
+                $scope.beerList = response.data
+              })
+        $scope.sortObj = {
+          ibu: 'id',
+          abv: 'abv'
+        }
+        $scope.sortOption = {
+          name: 'abv',
+          reverse: true
+        }
+        $scope.orderBy = function (sortByName) {
+          console.log('here')
+          $scope.sortOption.reverse = (sortByName !== null && $scope.sortOption.name === sortByName) ? !$scope.sortOption.reverse : false;
+          $scope.sortOption.name = sortByName
+        }
+          })
+        .component('beer', beerComponent,
+          function($scope, $http) {
+            $http
+              .get('https://api.punkapi.com/v2/beers')
+              .then( function(response){
+                this.beerList = response
+              })
+          });
+
+    </script>
+  </body>
+</html>
